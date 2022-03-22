@@ -1,10 +1,11 @@
+import 'package:countup/countup.dart';
 import 'package:covid_api_flutter/constants/constant.dart';
 import 'package:flutter/material.dart';
 
 class Counter extends StatelessWidget {
   final String title;
   final Color color;
-  final int number;
+  final double number;
 
   const Counter({
     Key? key,
@@ -37,9 +38,14 @@ class Counter extends StatelessWidget {
           ),
         ),
         const SizedBox(height: 10),
-        Text(
-          number.toString(),
-          style: TextStyle(color: color, fontSize: 40),
+        Countup(
+          begin: 0,
+          end: number,
+          duration: const Duration(seconds: 3),
+          separator: ',',
+          style: const TextStyle(
+            fontSize: 36,
+          ),
         ),
         Text(
           title,

@@ -1,15 +1,24 @@
+import 'package:covid_api_flutter/bloc/country/country_bloc.dart';
+import 'package:covid_api_flutter/bloc/statistic/statistic_bloc.dart';
 import 'package:covid_api_flutter/components/details_button.dart';
 import 'package:covid_api_flutter/constants/constant.dart';
-import 'package:covid_api_flutter/services/api_services.dart';
+import 'package:covid_api_flutter/models/country_model.dart';
+import 'package:covid_api_flutter/models/statistic_model.dart';
 import 'package:covid_api_flutter/widgets/counter_widget.dart';
 import 'package:covid_api_flutter/widgets/my_header_widget.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:intl/intl.dart';
 
-class HomePage extends StatelessWidget {
+class HomePage extends StatefulWidget {
   const HomePage({Key? key}) : super(key: key);
 
+  @override
+  State<HomePage> createState() => _HomePageState();
+}
+
+class _HomePageState extends State<HomePage> {
   @override
   Widget build(BuildContext context) {
     final _screenSize = MediaQuery.of(context).size;
@@ -17,7 +26,7 @@ class HomePage extends StatelessWidget {
     var formatter = DateFormat('MMMM dd');
     String formattedDate = formatter.format(now);
 
-    final _apiService = ApiService();
+    final _countryBloc = BlocProvider.of<CountryBloc>(context);
 
     return Scaffold(
       body: SingleChildScrollView(
@@ -46,25 +55,49 @@ class HomePage extends StatelessWidget {
                   SvgPicture.asset('assets/icons/maps-and-flags.svg'),
                   const SizedBox(width: 20),
                   Expanded(
-                    child: FutureBuilder(
-                      future: _apiService.fetchCountries(),
-                      builder: (context, snapshot) {
-                        return DropdownButton(
-                          isExpanded: true,
-                          underline:
-                              const SizedBox(), // to remove the underline
-                          icon: SvgPicture.asset('assets/icons/dropdown.svg'),
-                          value: "Vietnam",
-                          items: ['Vietnam', 'Indonesia', 'Japan', 'Korea']
-                              .map<DropdownMenuItem<String>>(
-                                (String val) => DropdownMenuItem(
-                                  child: Text(val),
-                                  value: val,
-                                ),
+                    child: BlocBuilder<CountryBloc, CountryState>(
+                      bloc: _countryBloc,
+                      builder: (context, state) {
+                        if (state is CountryLoading) {
+                          return DropdownButton(
+                            isExpanded: true,
+                            underline:
+                                const SizedBox(), // to remove the underline
+                            icon: SvgPicture.asset('assets/icons/dropdown.svg'),
+                            hint: const Text('Loading...'),
+                            items: const [
+                              DropdownMenuItem(
+                                child: Text('Loading...'),
+                                value: "Loading...",
                               )
-                              .toList(),
-                          onChanged: (value) {},
-                        );
+                            ],
+                            onChanged: (value) {},
+                          );
+                        }
+                        if (state is CountryLoaded) {
+                          List<Country>? countries = state.countries;
+                          return DropdownButton(
+                            isExpanded: true,
+                            underline:
+                                const SizedBox(), // to remove the underline
+                            icon: SvgPicture.asset('assets/icons/dropdown.svg'),
+                            hint: const Text('Select Country'),
+                            value: _countryBloc.country,
+                            items: countries
+                                .map(
+                                  (Country val) => DropdownMenuItem(
+                                    child: Text(val.name),
+                                    value: val,
+                                  ),
+                                )
+                                .toList(),
+                            onChanged: (newValue) {
+                              _countryBloc.add(
+                                  ChangeCountry(country: newValue as Country));
+                            },
+                          );
+                        }
+                        return Container();
                       },
                     ),
                   ),
@@ -101,6 +134,7 @@ class HomePage extends StatelessWidget {
                   const SizedBox(height: 20),
                   Container(
                     padding: const EdgeInsets.all(20),
+                    width: double.maxFinite,
                     decoration: BoxDecoration(
                       borderRadius: BorderRadius.circular(20),
                       color: Colors.white,
@@ -112,19 +146,37 @@ class HomePage extends StatelessWidget {
                         )
                       ],
                     ),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: const [
-                        Counter(
-                            color: kInfectedColor,
-                            number: 1046,
-                            title: "Infected"),
-                        Counter(color: kDeathColor, number: 87, title: "Death"),
-                        Counter(
-                            color: kRecoverColor,
-                            number: 46,
-                            title: "Recovered"),
-                      ],
+                    child: BlocBuilder<StatisticBloc, StatisticState>(
+                      builder: (context, state) {
+                        if (state is StatisticLoading) {
+                          return const Center(
+                            child: CircularProgressIndicator(),
+                          );
+                        }
+                        if (state is StatisticLoaded) {
+                          final Statistic data = state.statistic;
+                          return Column(
+                            mainAxisAlignment: MainAxisAlignment.spaceAround,
+                            children: [
+                              Counter(
+                                color: kInfectedColor,
+                                number: data.confirmed.value,
+                                title: "Infected",
+                              ),
+                              Counter(
+                                  color: kDeathColor,
+                                  number: data.deaths.value,
+                                  title: "Death"),
+                              Counter(
+                                color: kRecoverColor,
+                                number: data.recovered.value,
+                                title: "Recovered",
+                              ),
+                            ],
+                          );
+                        }
+                        return Container();
+                      },
                     ),
                   )
                 ],

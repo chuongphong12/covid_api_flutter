@@ -55,11 +55,11 @@ class Case {
     required this.detail,
   });
 
-  final double value;
+  final int value;
   final String detail;
 
   Case copyWith({
-    double? value,
+    int? value,
     String? detail,
   }) =>
       Case(

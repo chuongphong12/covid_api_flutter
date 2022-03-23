@@ -26,7 +26,7 @@ class CountryBloc extends Bloc<CountryEvent, CountryState> {
       }
     });
     on<ChangeCountry>((event, emit) {
-      emit(CountrySelected(country: event.country));
+      emit(CountrySelected(country: event.country!));
       country = event.country;
       emit(CountryLoaded(countries: listCountry));
     });

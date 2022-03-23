@@ -10,10 +10,10 @@ abstract class StatisticEvent extends Equatable {
 class FetchStatistic extends StatisticEvent {}
 
 class FetchStatisticByCountry extends StatisticEvent {
-  final String country;
+  final String? country;
 
   const FetchStatisticByCountry({required this.country});
 
   @override
-  List<Object> get props => [country];
+  List<Object> get props => [country!];
 }

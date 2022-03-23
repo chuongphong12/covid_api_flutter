@@ -1,3 +1,4 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:covid_api_flutter/bloc/country/country_bloc.dart';
 import 'package:covid_api_flutter/bloc/statistic/statistic_bloc.dart';
 import 'package:covid_api_flutter/components/details_button.dart';
@@ -27,6 +28,7 @@ class _HomePageState extends State<HomePage> {
     String formattedDate = formatter.format(now);
 
     final _countryBloc = BlocProvider.of<CountryBloc>(context);
+    final _statisticBloc = BlocProvider.of<StatisticBloc>(context);
 
     return Scaffold(
       body: SingleChildScrollView(
@@ -61,8 +63,7 @@ class _HomePageState extends State<HomePage> {
                         if (state is CountryLoading) {
                           return DropdownButton(
                             isExpanded: true,
-                            underline:
-                                const SizedBox(), // to remove the underline
+                            underline: const SizedBox(), // to remove the underline
                             icon: SvgPicture.asset('assets/icons/dropdown.svg'),
                             hint: const Text('Loading...'),
                             items: const [
@@ -76,10 +77,9 @@ class _HomePageState extends State<HomePage> {
                         }
                         if (state is CountryLoaded) {
                           List<Country>? countries = state.countries;
-                          return DropdownButton(
+                          return DropdownButton<Country>(
                             isExpanded: true,
-                            underline:
-                                const SizedBox(), // to remove the underline
+                            underline: const SizedBox(), // to remove the underline
                             icon: SvgPicture.asset('assets/icons/dropdown.svg'),
                             hint: const Text('Select Country'),
                             value: _countryBloc.country,
@@ -92,8 +92,8 @@ class _HomePageState extends State<HomePage> {
                                 )
                                 .toList(),
                             onChanged: (newValue) {
-                              _countryBloc.add(
-                                  ChangeCountry(country: newValue as Country));
+                              _countryBloc.add(ChangeCountry(country: newValue));
+                              _statisticBloc.add(FetchStatisticByCountry(country: newValue!.name));
                             },
                           );
                         }
@@ -164,9 +164,7 @@ class _HomePageState extends State<HomePage> {
                                 title: "Infected",
                               ),
                               Counter(
-                                  color: kDeathColor,
-                                  number: data.deaths.value,
-                                  title: "Death"),
+                                  color: kDeathColor, number: data.deaths.value, title: "Death"),
                               Counter(
                                 color: kRecoverColor,
                                 number: data.recovered.value,
@@ -213,9 +211,21 @@ class _HomePageState extends State<HomePage> {
                         )
                       ],
                     ),
-                    child: Image.asset(
-                      'assets/images/map.png',
-                      fit: BoxFit.contain,
+                    child: CachedNetworkImage(
+                      placeholder: (context, url) => const Center(
+                        child: CircularProgressIndicator(),
+                      ),
+                      errorWidget: (context, url, error) => const Icon(Icons.error),
+                      imageUrl: '$baseUrl/og',
+                      imageBuilder: (context, imageProvider) => Container(
+                        decoration: BoxDecoration(
+                          image: DecorationImage(
+                            image: imageProvider,
+                            fit: BoxFit.cover,
+                          ),
+                          borderRadius: BorderRadius.circular(18),
+                        ),
+                      ),
                     ),
                   )
                 ],

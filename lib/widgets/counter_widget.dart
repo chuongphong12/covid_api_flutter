@@ -5,7 +5,7 @@ import 'package:flutter/material.dart';
 class Counter extends StatelessWidget {
   final String title;
   final Color color;
-  final double number;
+  final int number;
 
   const Counter({
     Key? key,
@@ -18,39 +18,47 @@ class Counter extends StatelessWidget {
   Widget build(BuildContext context) {
     return Column(
       children: [
-        Container(
-          padding: const EdgeInsets.all(6),
-          height: 25,
-          width: 25,
-          decoration: BoxDecoration(
-            shape: BoxShape.circle,
-            color: color.withOpacity(.26),
-          ),
-          child: Container(
-            decoration: BoxDecoration(
-              border: Border.all(
-                color: color,
-                width: 2,
+        Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Container(
+              padding: const EdgeInsets.all(6),
+              height: 25,
+              width: 25,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: color.withOpacity(.26),
               ),
-              color: Colors.transparent,
-              shape: BoxShape.circle,
+              child: Container(
+                decoration: BoxDecoration(
+                  border: Border.all(
+                    color: color,
+                    width: 2,
+                  ),
+                  color: Colors.transparent,
+                  shape: BoxShape.circle,
+                ),
+              ),
             ),
-          ),
+            const SizedBox(width: 10),
+            Text(
+              title,
+              style: kSubTextStyle,
+            ),
+          ],
         ),
         const SizedBox(height: 10),
         Countup(
           begin: 0,
-          end: number,
+          end: number.toDouble(),
           duration: const Duration(seconds: 3),
           separator: ',',
-          style: const TextStyle(
-            fontSize: 36,
+          style: TextStyle(
+            fontSize: 40,
+            color: color,
           ),
         ),
-        Text(
-          title,
-          style: kSubTextStyle,
-        ),
+        const SizedBox(height: 10),
       ],
     );
   }

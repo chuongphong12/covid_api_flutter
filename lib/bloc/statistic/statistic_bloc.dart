@@ -19,5 +19,14 @@ class StatisticBloc extends Bloc<StatisticEvent, StatisticState> {
         emit(StatisticError(failure: Failure(message: e.toString(), code: '')));
       }
     });
+    on<FetchStatisticByCountry>((event, emit) async {
+      emit(StatisticLoading());
+      try {
+        final statistic = await apiRepository.getStatisticByCountry(event.country!);
+        emit(StatisticLoaded(statistic: statistic));
+      } catch (e) {
+        emit(StatisticError(failure: Failure(message: e.toString(), code: '')));
+      }
+    });
   }
 }

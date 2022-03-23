@@ -10,10 +10,10 @@ abstract class CountryEvent extends Equatable {
 class FetchAllCountry extends CountryEvent {}
 
 class ChangeCountry extends CountryEvent {
-  final Country country;
+  final Country? country;
 
   const ChangeCountry({required this.country});
 
   @override
-  List<Object> get props => [country];
+  List<Object> get props => [country!];
 }
